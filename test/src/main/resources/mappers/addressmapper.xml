@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.example.mapper.addressmapper">
+    <!--封装查询地址列表-->
+    <resultMap id="addressMap" type="com.example.pojo.commonPojo.Address">
+        <id column="id" property="id"/>
+        <result column="user_id" property="user_id"/>
+        <result column="name" property="name"/>
+        <result column="phone" property="phone"/>
+        <result column="tel" property="tel"/>
+        <result column="tag" property="tag"/>
+        <result column="province_name" property="province_name"/>
+        <result column="province_code" property="province_code"/>
+        <result column="city_name" property="city_name"/>
+        <result column="city_code" property="city_code"/>
+        <result column="area_name" property="area_name"/>
+        <result column="area_code" property="area_code"/>
+        <result column="is_default" property="is_default"/>
+        <result column="zip" property="zip"/>
+        <result column="address" property="address"/>
+    </resultMap>
+
+    <select id="getAddressList" resultMap="addressMap">
+        select *
+        from t_address
+        where user_id = #{user_id}
+    </select>
+    <!-- 根据编号查询 -->
+    <select id="getById" resultMap="addressMap">
+        select *
+        from t_address
+        where id = #{id}
+    </select>
+
+    <!--删除address-->
+    <delete id="delete"> delete
+                         from t_address
+                         where id = #{id}
+    </delete>
+
+    <!--设置全部为非默认-->
+    <update id="setAllNotDefault">
+        update t_address
+        set is_default=0
+        where user_id = #{id}
+    </update>
+
+    <!--设置全部为默认-->
+    <update id="setDefault">
+        update t_address
+        set is_default=#{is_default},
+            modified_user=#{modified_user},
+            modified_time=now()
+        where id = #{id}
+    </update>
+
+    <!--查询行政地址-->
+    <select id="getDistrictList"
+            resultType="com.example.pojo.commonPojo.District">
+        select *
+        from t_dict_district
+        where parent = #{parent}
+    </select>
+
+    <!--查询某用户收货地址条数-->
+    <select id="count" resultType="java.lang.Integer"> select count(1)
+                                                       from t_address
+                                                       where user_id = #{id} </select>
+
+
+    <!--新增收货地址-->
+    <insert id="save">
+        INSERT INTO `t_address`(`user_id`,
+                                `name`,
+                                `province_name`,
+                                `province_code`,
+                                `city_name`,
+                                `city_code`,
+                                `area_name`,
+                                `area_code`,
+                                `zip`,
+                                `address`,
+                                `phone`,
+                                `tel`,
+                                `tag`,
+                                `created_user`,
+                                `created_time`)
+        VALUES (#{user_id},
+                #{name},
+                #{province_name},
+                #{province_code},
+                #{city_name},
+                #{city_code},
+                #{area_name},
+                #{area_code},
+                #{zip},
+                #{address},
+                #{phone},
+                #{tel},
+                #{tag},
+                #{created_user},
+                now())
+    </insert>
+
+    <!--获取区域名称ByCode-->
+    <select id="getDistrictNameByCode" resultType="string">
+        select name from t_dict_district where code=#{code}
+    </select>
+    <!--查询默认地址-->
+    <select id="getDefaultByUserId" resultType="com.example.pojo.commonPojo.Address">
+        select *
+        from t_address
+        where user_id=#{user_id} and is_default=1
+    </select>
+
+    <!--修改收获地址信息-->
+    <update id="update">
+        UPDATE `t_address` SET
+                               `name` = #{name},
+                               `province_name` = #{province_name},
+                               `province_code` = #{province_code},
+                               `city_name` = #{city_name},
+                               `city_code` = #{city_code},
+                               `area_name` = #{area_name},
+                               `area_code` = #{area_code},
+                               `zip` = #{zip},
+                               `address` = #{address},
+                               `phone` = #{phone},
+                               `tel` = #{tel},
+                               `tag` = #{tag},
+                               `modified_user` = #{modified_user},
+                               `modified_time` =now()
+        WHERE `id` = #{id};
+
+    </update>
+</mapper>

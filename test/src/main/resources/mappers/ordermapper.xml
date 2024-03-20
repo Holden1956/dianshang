@@ -1,0 +1,236 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.example.mapper.ordermapper">
+
+
+    <resultMap id="orderMap" type="com.example.pojo.vo.OrderVO">
+        <id column="oid" property="id"/>
+        <result column="recv_name" property="recv_name"/>
+        <result column="total_price" property="total_price"/>
+        <result column="status" property="status"/>
+        <result column="order_time" property="order_time" typeHandler="com.example.common.DateHandler"
+                jdbcType="TIMESTAMP"/>
+        <!--1：N 一订单对多商品项-->
+        <collection property="orderItemVOList" ofType="com.example.pojo.vo.OrderItemVO"
+                    column="order_id">
+            <id column="item_id" property="id"/>
+            <result column="image" property="image"/>
+            <result column="num" property="num"/>
+            <result column="price" property="price"/>
+            <result column="order_id" property="order_id"/>
+            <result column="title" property="title"/>
+            <result column="product_id" property="product_id"/>
+        </collection>
+    </resultMap>
+
+    <resultMap id="orderItemMap" type="com.example.pojo.commonPojo.OrderItem">
+        <id column="oid" property="id"/>
+        <result column="order_id" property="order_id"/>
+        <result column="product_id" property="product_id"/>
+        <result column="num" property="num"/>
+        <result column="price" property="price"/>
+        <result column="image" property="image"/>
+        <result column="title" property="title"/>
+        <result column="created_user" property="created_user"/>
+        <result column="created_time" property="created_time"/>
+        <result column="modified_user" property="modified_user"/>
+        <result column="modified_time" property="modified_time"/>
+    </resultMap>
+
+    <resultMap id="orderOptMap" type="com.example.pojo.vo.OrderOptVO">
+        <result column="type" property="type"/>
+        <result column="created_time" property="created_time"/>
+    </resultMap>
+
+    <!--新增订单-->
+    <insert id="save" useGeneratedKeys="true" keyColumn="id" keyProperty="id">
+        INSERT INTO `storedb`.`t_order`
+        (`user_id`,
+         `recv_name`,
+         `recv_phone`,
+         `recv_province`,
+         `recv_city`,
+         `recv_area`,
+         `recv_address`,
+         `status`,
+         `total_price`,
+         `order_time`,
+         `is_delete`,
+         `created_user`,
+         `created_time`)
+        VALUES (#{user_id},
+                #{recv_name},
+                #{recv_phone},
+                #{recv_province},
+                #{recv_city},
+                #{recv_area},
+                #{recv_address},
+                #{status},
+                #{total_price},
+                now(),
+                0,
+                #{created_user},
+                now());
+    </insert>
+    <!--新增订单项-->
+    <insert id="saveOrderItem" useGeneratedKeys="true" keyColumn="id" keyProperty="id">
+        INSERT INTO `storedb`.`t_order_item`(`order_id`,
+                                             `product_id`,
+                                             `num`,
+                                             `price`,
+                                             `image`,
+                                             `title`,
+                                             `created_user`,
+                                             `created_time`)
+        VALUES (#{order_id},
+                #{product_id},
+                #{num},
+                #{price},
+                #{image},
+                #{title},
+                #{created_user},
+                now());
+    </insert>
+    <update id="updateOrderTotalPrice">
+        UPDATE `storedb`.`t_order`
+        SET `total_price` = #{total_price}
+        where user_id = #{user_id} Order By t_order.created_time DESC
+        limit 1
+    </update>
+    <!--修改支付时间-->
+    <update id="updateOrderPayTime">
+        update t_order
+        set pay_time=now()
+        where id = #{id}
+    </update>
+    <!--修改状态-->
+    <update id="updateNewOrderStatus">
+        update t_order
+        set status=2
+        where id = #{id}
+    </update>
+
+    <!--查询某用户所有订单 t_order.id取别名oid,t_order_item取别名item_id-->
+    <select id="getOrderList" resultMap="orderMap">
+        select
+               t_order.id      oid,
+               t_order.recv_name,
+               t_order.status,
+               t_order.total_price,
+               t_order.order_time,
+               t_order_item.id id,
+               t_order_item.order_id,
+               t_order_item.product_id,
+               t_order_item.num,
+               t_order_item.price,
+               t_order_item.image,
+               t_order_item.title
+        from t_order
+                 inner join t_order_item
+                            on t_order.id = t_order_item.order_id
+        where t_order.user_id = #{user_id}
+          and is_delete = 0
+    </select>
+
+    <!--获取最新生成的order-->
+    <select id="getNewOrder" resultType="com.example.pojo.commonPojo.Order">
+        select *
+        from t_order
+        where user_id = #{user_id}
+        order by created_time DESC limit 1
+    </select>
+    <!--获取新生成的OrderItemList-->
+    <select id="getNewOrderItemList" resultType="com.example.pojo.commonPojo.OrderItem">
+        select *
+        from t_order_item
+        where order_id = #{order_id}
+    </select>
+
+    <!--next id order api-->
+
+    <select id="getOrderItemList" resultMap="orderItemMap">
+        select *
+        from t_order_item
+        where order_id=#{id}
+    </select>
+    <insert id="insertOperate">
+        insert into t_opt(user_id,product_id,category_id,type,created_time)
+        values (#{user_id},#{product_id},#{category_id},#{type},now())
+    </insert>
+
+    <select id="getOrderById" resultType="com.example.pojo.commonPojo.Order">
+        select *,
+               recv_name,
+               recv_phone,
+               recv_address,
+               recv_province,
+               recv_city,
+               recv_area
+        from t_order
+        where id = #{orderId}
+    </select>
+
+    <update id="updateOrder">
+        update t_order
+        set status=#{status},
+            modified_user=#{modified_user},
+            recv_province=#{recv_province},
+            recv_city=#{recv_city},
+            recv_area=#{recv_area},
+            recv_address=#{recv_address},
+            modified_time=now()
+        where id=#{id}
+
+    </update>
+    <update id="updateOrderStatus">
+        update t_order
+        set status=#{status},
+            modified_user=#{modified_user},
+            modified_time=now()
+        where id=#{id}
+    </update>
+
+    <select id="getOrderListByStatus" resultMap="orderMap">
+        select
+            t_order.id oid,
+            recv_name,
+            status,
+            total_price,
+            order_time,
+            t_order_item.id itemid,
+            order_id,
+            product_id,
+            num,
+            price,
+            image,
+            title
+        from t_order
+                 inner join t_order_item
+                            on t_order.id = t_order_item.order_id
+        where t_order.user_id=#{userId} and is_delete=0 and status=#{status}
+    </select>
+
+    <select id="getZip" resultType="java.lang.Integer">
+        select zip
+        from t_address
+        where province_name=#{provinceName} and city_name=#{recvCity} and area_name=#{recvArea}
+        limit 1
+    </select>
+
+    <select id="getOrderOpt" resultMap="orderOptMap">
+        select *
+        from t_opt
+        where product_id=#{productId} and user_id=#{id}
+    </select>
+
+    <select id="getOrderItemDetail" resultType="com.example.pojo.vo.OrderItemDetailVO">
+        select id,modified_time modifiedTime,title,price,num
+        from t_order_item
+        where order_id=#{orderId} and product_id=#{productId}
+    </select>
+
+    <select id="getAllOrder" resultType="com.example.pojo.commonPojo.Order">
+        select *
+        from t_order
+    </select>
+</mapper>

@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.example.mapper.optmapper">
+
+    <!--pv insert-->
+    <insert id="createdOpt" useGeneratedKeys="true" keyColumn="id" keyProperty="id">
+        INSERT INTO `storedb`.`t_opt_copy1`(`user_id`, `product_id`, `category_id`, `type`, `created_time`)
+        VALUES (#{user_id}, #{product_id}, #{category_id}, #{type}, now());
+    </insert>
+    <select id="getUserOptByUserID" resultType="com.example.pojo.commonPojo.Opt">
+        select *
+        from t_opt_copy1
+        where user_id = #{user_id}
+    </select>
+    <select id="getViewCountByProductId" resultType="java.lang.Integer">
+        select count(1)
+        from t_opt_copy1
+        where product_id = #{product_id}
+    </select>
+
+    <select id="getAllUserAction" resultType="com.example.pojo.commonPojo.Opt">
+        select *
+        from t_opt_copy1
+    </select>
+
+</mapper>

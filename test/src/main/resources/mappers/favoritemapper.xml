@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.example.mapper.favoritemapper">
+
+    <!--获取收藏商品的存在性-->
+    <select id="getFavorite" resultType="com.example.pojo.commonPojo.Favorite">
+        select *
+        from t_favorite
+        where product_id = #{product_id}
+          and user_id = #{user_id}
+    </select>
+
+    <!--获取某一用户的所有收藏-->
+    <select id="getFavoriteProduct" resultType="com.example.pojo.commonPojo.Product">
+        select p.id, p.title, p.price, p.image
+        from t_favorite f
+                 inner join t_product p on f.product_id = p.id
+        where user_id = #{user_id} limit #{offSet}
+            , #{pageSize}
+    </select>
+    <!--某用户收藏的总数-->
+    <select id="count" resultType="java.lang.Integer">
+        select count(1)
+        from t_favorite
+        where user_id = #{user_id}
+    </select>
+
+    <!--新增收藏-->
+    <insert id="insert">
+        insert into `t_favorite`( `user_id`, `product_id`, `created_user`, `created_time`)
+        values (#{user_id},#{product_id},#{created_user},now())
+    </insert>
+    <!--删除藏品-->
+    <delete id="delete">
+        delete from t_favorite where product_id=#{product_id} and user_id=#{user_id}
+    </delete>
+</mapper>

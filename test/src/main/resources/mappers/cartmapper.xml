@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.example.mapper.cartmapper">
+    <!--封装查询购物车列表-->
+
+    <resultMap id="cartMap" type="com.example.pojo.commonPojo.Cart">
+        <id column="id" property="id"/>
+        <result column="user_id" property="user_id"/>
+        <result column="product_id" property="product_id"/>
+        <result column="price" property="price"/>
+        <result column="num" property="num"/>
+        <!--        <result column="created_user" property="created_user"/>-->
+        <!--        <result column="created_time" property="created_time"  typeHandler="com.example.common.DataHandler"/>-->
+        <!--        <result column="modified_user" property="modified_user"/>-->
+        <!--        <result column="modified_time" property="modified_time"  typeHandler="com.example.common.DataHandler"/>-->
+    </resultMap>
+    <!--新增购物车-->
+    <insert id="save" useGeneratedKeys="true" keyColumn="id" keyProperty="id">
+        INSERT INTO `storedb`.`t_cart`(`user_id`, `product_id`, `price`, `num`, `created_user`, `created_time`)
+        VALUES (#{user_id}, #{product_id}, #{price}, #{num}, #{created_user}, now())
+    </insert>
+    <!--删除已经结算的购物项-->
+    <delete id="delCartCell">
+        delete
+        from t_cart
+        where user_id = #{user_id}
+          and product_id = #{id}
+    </delete>
+
+    <select id="getCartListByUserId" resultMap="cartMap">
+        select *
+        from t_cart
+        where user_id = #{id}
+    </select>
+
+    <select id="getCartByPUId" resultType="com.example.pojo.commonPojo.Cart">
+        select *
+        from t_cart
+        where user_id = #{user_id} and product_id = #{id}
+    </select>
+
+    <!--购物车数量加-->
+    <update id="updateAddNum">
+        UPDATE `storedb`.`t_cart`
+        SET `num` = num + 1
+        where product_id = #{product_id} and user_id=#{user_id}
+    </update>
+    <!--购物车数量减-->
+    <update id="updateDecreaseNum">
+        UPDATE `storedb`.`t_cart`
+        SET `num` = num - 1
+        where product_id = #{product_id} and user_id=#{user_id}
+    </update>
+    <!--购物车数量加减，获取id-->
+    <select id="getProductId" resultType="com.example.pojo.commonPojo.Cart">
+        select num, price
+        from t_cart
+        where product_id = #{product_id}
+    </select>
+    <select id="getCartListByPUId" resultType="com.example.pojo.commonPojo.Cart">
+        select *
+        from t_cart
+        where user_id = #{user_id} and product_id = #{id}
+    </select>
+</mapper>

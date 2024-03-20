@@ -1,0 +1,56 @@
+server:
+  port: 8080 #端口号
+spring:
+  datasource:
+    url: jdbc:
+    username:
+    password: 
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    type: com.alibaba.druid.pool.DruidDataSource
+  thymeleaf:
+    cache: false
+    suffix: .html
+    prefix: classpath:/templates/
+    mode: HTML
+    encoding: UTF-8
+    servlet:
+      content-type: text/html; charset=utf-8
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 30MB
+#  jackson:
+#    default-property-inclusion: non_null  #过滤返回的json数据中的null值（null值不返回）
+
+
+mybatis:
+  #  指定包下类
+  type-aliases-package: com.example.pojo
+  #  指定配置文件位置
+  mapper-locations: classpath:/mappers/*.xml
+  configuration:
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl #日志实现
+logging:
+  level:
+    com.example: debug #设置指定包下的日志级别
+knife4j:
+  enable: true #增强
+  production: false #不用于生产
+  openapi:
+    title: 电商后台接口文档 #标题
+    description: API文档 #描述
+    email: 2786603699@qq.com
+    concat: qixuan
+    url: https://v.highedu.cn/
+    version: v1.0
+    license: Apache 2.0
+    #license-url: https://stackoverflow.com/
+    #terms-of-service-url: https://stackoverflow.com/
+
+group:
+  test1:
+    group-name: 实训一组
+    api-rule: package #扫描包
+    api-rule-resources:
+      - com.example.controller.UserController #具体的包路径
+      - com.example.common.R
